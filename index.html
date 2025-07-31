@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Test StT9CU Bulan Juli 2025</title>
+
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Memuat PapaParse untuk membaca data dari Google Sheet -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <!-- Konfigurasi Font dan Style Tambahan -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        /* Style untuk feedback jawaban */
+        .correct {
+            background-color: #10B981 !important; /* Hijau */
+            color: white !important;
+            border-color: #059669 !important;
+        }
+        .incorrect {
+            background-color: #EF4444 !important; /* Merah */
+            color: white !important;
+            border-color: #DC2626 !important;
+        }
+        /* Efek transisi untuk tombol */
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        /* Style untuk tombol yang dinonaktifkan */
+        .btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        /* Custom styles for ST9CU logo */
+        .st9cu-logo {
+            font-family: sans-serif; /* Fallback font */
+            font-weight: 900;
+            font-size: 4rem; /* Adjust as needed */
+            line-height: 1;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        .st9cu-logo span {
+            color: #FFC107; /* Orange/Yellow color for '9' - similar to image */
+        }
+        .st9cu-logo-small {
+            font-family: sans-serif;
+            font-weight: 900;
+            font-size: 2rem; /* Smaller size for quiz screen */
+            line-height: 1;
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            text-align: center; /* Center the logo */
+        }
+        .st9cu-logo-small span {
+            color: #FFC107; /* Orange/Yellow color for '9' */
+        }
+        .explanation-box {
+            background-color: #e0f2f7; /* Light blue background */
+            border-left: 4px solid #00bcd4; /* Cyan border */
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            color: #006064; /* Dark cyan text */
+            font-size: 0.9rem;
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app-container" class="w-full max-w-2xl mx-auto">
+
+        <!-- 1. Tampilan Awal / Loading -->
+        <div id="start-screen" class="bg-white p-8 rounded-2xl shadow-lg text-center">
+            <!-- Logo ST9CU -->
+            <div class="st9cu-logo mb-4">ST<span>9</span>CU</div>
+            <h1 id="quiz-title" class="text-3xl font-bold text-gray-800 mb-4">Post Test StT9CU Bulan Juli 2025</h1>
+            <p id="quiz-description" class="text-gray-600 mb-4">waktunya ST9CU, sdm tiap hari, eksis dengan content Update, daftar dulu yuk!</p>
+            
+            <!-- Informasi Penting -->
+            <div id="important-info" class="bg-blue-50 p-4 rounded-lg mb-6 text-left text-blue-800 border-l-4 border-blue-400">
+                <h3 class="font-semibold text-lg mb-2">Informasi Penting</h3>
+                <p class="text-sm">Seluruh jawaban kuis akan dikumpulkan menjadi dasar pembuatan Sertifikat Kompetensi SDM setiap akhir bulan.</p>
+            </div>
+
+            <!-- Petunjuk Kuis -->
+            <div id="quiz-explanation" class="bg-gray-100 p-4 rounded-lg mb-6 text-left text-gray-700">
+                <h3 class="font-semibold text-lg mb-2">Petunjuk Kuis:</h3>
+                <ul class="list-disc list-inside text-sm">
+                    <li>Kuis ini terdiri dari beberapa pertanyaan pilihan ganda.</li>
+                    <li>Setiap jawaban benar bernilai **5 poin**.</li>
+                    <li>Pastikan Anda mengisi Nama dan NIP dengan benar.</li>
+                    <li>Pilih jawaban terbaik untuk setiap pertanyaan.</li>
+                </ul>
+            </div>
+
+            <!-- Input Nama dan NIP -->
+            <div class="mb-6 text-left">
+                <label for="user-name" class="block text-gray-700 text-sm font-bold mb-2">Nama Lengkap:</label>
+                <input type="text" id="user-name" placeholder="Masukkan nama lengkap Anda" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+            <div class="mb-6 text-left">
+                <label for="user-nip" class="block text-gray-700 text-sm font-bold mb-2">NIP:</label>
+                <input type="text" id="user-nip" placeholder="Masukkan NIP Anda" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+            <div class="mb-8 text-left">
+                <label for="user-satker" class="block text-gray-700 text-sm font-bold mb-2">Satker/Tim Kerja/Unit Kerja:</label>
+                <input type="text" id="user-satker" placeholder="Masukkan satker/tim kerja Anda" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+
+            <div id="loading-state">
+                <p class="text-blue-600 font-semibold">Memuat soal dari Google Sheet...</p>
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mt-4"></div>
+            </div>
+            <!-- Pesan error/informasi akan ditampilkan di sini -->
+            <div id="message-box" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">Perhatian!</strong>
+                <span id="message-text" class="block sm:inline"></span>
+            </div>
+            <button id="start-btn" class="hidden bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition-transform transform hover:scale-105 w-full md:w-auto flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 mr-2">
+                    <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.566 0 3.278L7.28 20.991c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" />
+                </svg>
+                Mulai Kuis
+            </button>
+        </div>
+
+        <!-- 2. Tampilan Kuis -->
+        <div id="quiz-screen" class="hidden bg-white p-8 rounded-2xl shadow-lg">
+            <!-- Logo ST9CU di dalam kuis screen -->
+            <div class="st9cu-logo-small mb-4">ST<span>9</span>CU</div>
+            <div class="flex justify-between items-center mb-6">
+                <p id="progress-text" class="text-sm font-medium text-gray-500">Soal 1 dari 10</p>
+                <p id="score-text" class="text-sm font-medium text-green-600">Skor: 0</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                <p id="question-text" class="text-xl font-semibold text-gray-800 text-center">Ini adalah placeholder untuk pertanyaan kuis yang akan dimuat dari Google Sheet.</p>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Opsi jawaban akan di-generate oleh JavaScript -->
+            </div>
+            <!-- Kotak penjelasan jawaban -->
+            <div id="explanation-box" class="explanation-box hidden">
+                <h4 class="font-bold mb-1">Penjelasan:</h4>
+                <p id="explanation-text"></p>
+            </div>
+        </div>
+
+        <!-- 3. Tampilan Hasil Akhir -->
+        <div id="result-screen" class="hidden bg-white p-8 rounded-2xl shadow-lg text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Kuis Selesai!</h2>
+            <p class="text-gray-600 mb-6">Berikut adalah hasil akhir Anda:</p>
+            <div class="bg-blue-50 p-6 rounded-xl mb-8">
+                <p class="text-lg text-blue-800">Skor Akhir Anda</p>
+                <p id="final-score" class="text-6xl font-bold text-blue-600 my-2">100</p>
+                <p id="score-summary" class="text-blue-800">Anda menjawab 10 dari 10 soal dengan benar!</p>
+            </div>
+            <!-- Tampilkan Nama, NIP, dan Satker di hasil akhir -->
+            <p id="final-user-info" class="text-gray-700 mb-4"></p>
+            <button id="restart-btn" class="bg-gray-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-800 transition-transform transform hover:scale-105 w-full md:w-auto">
+                Ulangi Kuis
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- URL Google Sheet Anda ---
+        // Pastikan sheet Anda dipublikasikan ke web sebagai CSV
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSjCkpLfaIDhPZIKs-HCaTbreC_REydA0OLSppwRJEgAs0KKaekZj7eo-81NK4qUXEtWSQKgn1SwWyW/pub?gid=0&single=true&output=csv';
+
+        // --- Elemen-elemen UI ---
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+
+        const loadingState = document.getElementById('loading-state');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const progressText = document.getElementById('progress-text');
+        const scoreText = document.getElementById('score-text');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        const finalScore = document.getElementById('final-score');
+        const scoreSummary = document.getElementById('score-summary');
+        const finalUserInfo = document.getElementById('final-user-info'); // Elemen untuk menampilkan info pengguna di hasil akhir
+
+        // Elemen untuk menampilkan pesan di dalam aplikasi (menggantikan alert)
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+
+        // Input fields for user info
+        const userNameInput = document.getElementById('user-name');
+        const userNipInput = document.getElementById('user-nip');
+        const userSatkerInput = document.getElementById('user-satker'); // New input for Satker
+
+        // Explanation box elements
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationText = document.getElementById('explanation-text');
+
+        // --- Variabel State Kuis ---
+        let allQuestions = []; // Array untuk menyimpan semua soal yang dimuat
+        let currentQuestionIndex = 0; // Indeks soal saat ini
+        let score = 0; // Skor pengguna (dalam poin)
+        let userName = ''; // Nama pengguna
+        let userNip = ''; // NIP pengguna
+        let userSatker = ''; // Satker pengguna
+        const POINTS_PER_QUESTION = 5; // Nilai poin untuk setiap soal yang benar
+
+        // Set untuk melacak kombinasi nama-NIP yang sudah menyelesaikan kuis dalam sesi ini
+        // Catatan: Ini hanya akan berfungsi selama sesi browser aktif. Jika browser ditutup, data ini akan hilang.
+        const completedUsers = new Set();
+
+        // Daftar NIP yang valid
+        // Nama Lengkap bebas diisi, tetapi NIP harus ada dalam daftar ini
+        const VALID_NIPS = new Set([
+            "197609271999011001",
+            "196801191993022001",
+            "198701042009022004",
+            "197212121994012001",
+            "198001292005021002",
+            "196305051991021001",
+            "197607011999121001",
+            "198104262003122006",
+            "197311221995121002",
+            "197505021996121001",
+            "197402031996121001",
+            "197605021997121001",
+            "198103292006021001",
+            "197006251998031001",
+            "197910072000121004",
+            "198304162008011009",
+            "196809091994012001",
+            "198407062008012017",
+            "198510202007012002",
+            "197701261999011001",
+            "198306012006022001",
+            "197707242000122002",
+            "197905122002122003",
+            "198211012004121003",
+            "198210212004122001",
+            "198710242009122002",
+            "198510242009022006",
+            "198604232009021003",
+            "198705242009022007",
+            "198408232008012009",
+            "198511152008012003",
+            "198512072008012004",
+            "198807062010121007",
+            "198407102007011003",
+            "198302252006041003",
+            "199402232016021001",
+            "198108092004121001",
+            "197901222002122005",
+            "197409262002122002",
+            "197912262002121004",
+            "197806282000121003",
+            "197711142000031001",
+            "197703111998031002",
+            "197307281994122001",
+            "196912171994011001",
+            "197409191993011001",
+            "197011101992031005",
+            "197012271990031002",
+            "196906231989032001",
+            "199406152016021001",
+            "199209032014122002",
+            "198006052005022001",
+            "199212272014122001",
+            "198707022013111001",
+            "198608302011012027",
+            "198601072010031002",
+            "197407311993011001",
+            "198606192009022004",
+            "198612092009121003",
+            "199412162017012002",
+            "199312172017011001",
+            "199510222018021001",
+            "199509242018021001",
+            "199210272019031001",
+            "199607132019032001",
+            "198810272011012013",
+            "199408232019032001",
+            "199504292019122001",
+            "199801042019121001",
+            "198802192010031001",
+            "199809212021042001",
+            "197909152006042026",
+            "199906232022011001",
+            "199811182022012002",
+            "199703312019122002",
+            "200203152023022001",
+            "199302072014121001",
+            "200109132024121002",
+            "200107042024122003",
+            "197308101994011001",
+            "199007132012112001",
+            "197006252002121003",
+            "197606122002121010",
+            "197503301996031002",
+            "198405152007011001",
+            "199811042023022001",
+            "199809022019122001",
+            "200101082019122001",
+            "197609021999012001",
+            "197409241994032001",
+            "196711251994022001",
+            "198409292011011015",
+            "198806102011012013",
+            "198404272011011010",
+            "198604182011011011",
+            "197611122008012014",
+            "198208032005022002",
+            "197804082005022002",
+            "198311102005022001",
+            "197801301998031001",
+            "197201271998032012",
+            "198411182009022008",
+            "198712222008012001",
+            "198903082012111001",
+            "197801282005022003",
+            "199506132017012001",
+            "199606302019121001",
+            "199712252019121001",
+            "199408272017012001",
+            "199405142017012001",
+            "199311062016022002",
+            "198102022005021002",
+            "198902202011012009",
+            "198410262011012013",
+            "198712292010032001",
+            "198802112010031001",
+            "198506272009022011",
+            "198910122023212022",
+            "199003062012122001",
+            "198611132022032001",
+            "198402092007011001",
+            "199901092022012001",
+            "199401122025061005",
+            "199605282025061004",
+            "200208282025062002",
+            "200305102025062001"
+        ]);
+
+        // --- Fungsi Utama ---
+
+        /**
+         * Fungsi pembantu untuk menormalisasi string (lowercase dan hapus spasi ekstra).
+         * Berguna untuk perbandingan NIP yang konsisten.
+         * @param {string} str - String yang akan dinormalisasi.
+         * @returns {string} String yang sudah dinormalisasi.
+         */
+        function normalizeString(str) {
+            return str.toLowerCase().replace(/\s+/g, '').trim(); // Menghapus semua spasi untuk NIP
+        }
+
+        /**
+         * Menampilkan pesan di dalam kotak pesan UI.
+         * @param {string} message - Pesan yang akan ditampilkan.
+         * @param {string} type - Tipe pesan ('success', 'error', 'info'). Mengatur warna kotak pesan.
+         */
+        function showMessage(message, type = 'info') {
+            messageText.innerText = message;
+            messageBox.classList.remove('hidden');
+            // Reset kelas warna
+            messageBox.classList.remove('bg-red-100', 'border-red-400', 'text-red-700', 'bg-green-100', 'border-green-400', 'text-green-700', 'bg-blue-100', 'border-blue-400', 'text-blue-700');
+
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+            } else if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+            } else { // default to info
+                messageBox.classList.add('bg-blue-100', 'border-blue-400', 'text-blue-700');
+            }
+        }
+
+        /**
+         * Menyembunyikan kotak pesan.
+         */
+        function hideMessage() {
+            messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Mengambil dan mem-parsing data CSV dari Google Sheet.
+         * Data akan difilter untuk memastikan hanya soal yang valid yang digunakan.
+         */
+        function loadQuizData() {
+            Papa.parse(GOOGLE_SHEET_URL, {
+                download: true, // Mengizinkan PapaParse untuk mengunduh file dari URL
+                header: true,   // Menggunakan baris pertama sebagai header (nama kolom)
+                complete: (results) => {
+                    // Peta data dari hasil PapaParse ke format yang diharapkan oleh kuis
+                    allQuestions = results.data.map(row => {
+                        return {
+                            soal: row['Question (Pertanyaan)'] || '', // Memetakan kolom "Question (Pertanyaan)" ke 'soal'
+                            a: row['OptionA (Opsi A)'] || '',       // Memetakan kolom "OptionA (Opsi A)" ke 'a'
+                            b: row['OptionB (Opsi B)'] || '',       // Memetakan kolom "OptionB (Opsi B)" ke 'b'
+                            c: row['OptionC (Opsi C)'] || '',       // Memetakan kolom "OptionC (Opsi C)" ke 'c'
+                            d: row['OptionD (Opsi D)'] || '',       // Memetakan kolom "OptionD (Opsi D)" ke 'd'
+                            kunci: row['CorrectAnswer (Jawaban Benar)'] || '', // Memetakan kolom "CorrectAnswer (Jawaban Benar)" ke 'kunci'
+                            penjelasan: row['Explanation (Penjelasan)'] || '' // Memetakan kolom "Explanation (Penjelasan)" ke 'penjelasan'
+                        };
+                    }).filter(question =>
+                        question.soal && question.soal.trim() !== '' &&
+                        question.kunci && question.kunci.trim() !== ''
+                    );
+                    console.log('Soal berhasil dimuat:', allQuestions);
+
+                    // Tampilkan tombol mulai setelah data siap
+                    loadingState.classList.add('hidden');
+                    if (allQuestions.length > 0) {
+                        startBtn.classList.remove('hidden');
+                        hideMessage(); // Sembunyikan pesan jika ada
+                    } else {
+                        // Tampilkan pesan jika tidak ada soal yang valid
+                        showMessage('Tidak ada soal yang valid ditemukan di Google Sheet. Pastikan kolom "Question (Pertanyaan)" dan "CorrectAnswer (Jawaban Benar)" terisi.', 'error');
+                    }
+                },
+                error: (error) => {
+                    console.error('Gagal memuat data dari Google Sheet:', error);
+                    document.getElementById('quiz-title').innerText = 'Error Memuat Data!';
+                    document.getElementById('quiz-description').innerText = 'Tidak dapat memuat soal dari Google Sheet. Periksa kembali URL dan pastikan sheet sudah dipublikasikan ke web sebagai CSV.';
+                    loadingState.classList.add('hidden');
+                    // Tampilkan pesan error di kotak pesan
+                    showMessage('Gagal memuat soal. Pastikan URL Google Sheet benar dan dipublikasikan sebagai CSV.', 'error');
+                }
+            });
+        }
+
+        /**
+         * Memulai atau mereset kuis.
+         * Mengatur ulang skor dan indeks pertanyaan, lalu menampilkan pertanyaan pertama.
+         */
+        function startQuiz() {
+            // Ambil nilai nama, NIP, dan Satker
+            userName = userNameInput.value.trim();
+            userNip = userNipInput.value.trim();
+            userSatker = userSatkerInput.value.trim();
+
+            // Normalisasi NIP untuk perbandingan dengan daftar valid
+            const normalizedUserNip = normalizeString(userNip);
+            // Identifier untuk mencegah pengulangan tetap menggunakan nama dan NIP
+            const userIdentifierForCompletion = `${normalizeString(userName)}-${normalizedUserNip}`;
+
+            // Validasi input nama, NIP, dan Satker
+            if (userName === '') {
+                showMessage('Nama Lengkap harus diisi!', 'error');
+                return;
+            }
+            if (userNip === '') {
+                showMessage('NIP harus diisi!', 'error');
+                return;
+            }
+            if (userSatker === '') {
+                showMessage('Satker/Tim Kerja/Unit Kerja harus diisi!', 'error');
+                return;
+            }
+
+            // Cek apakah NIP terdaftar dalam daftar VALID_NIPS
+            if (!VALID_NIPS.has(normalizedUserNip)) {
+                showMessage('NIP tidak terdaftar. Silakan periksa kembali atau hubungi administrator.', 'error');
+                return;
+            }
+
+            // Cek apakah pengguna (berdasarkan Nama dan NIP) sudah menyelesaikan kuis dalam sesi ini
+            if (completedUsers.has(userIdentifierForCompletion)) {
+                showMessage('Anda sudah menyelesaikan kuis ini dengan Nama Lengkap dan NIP tersebut. Tidak bisa mengulang kembali.', 'info');
+                return; // Hentikan fungsi jika sudah selesai
+            }
+
+            // Pengecekan untuk memastikan ada soal sebelum memulai kuis
+            if (allQuestions.length === 0) {
+                showMessage('Tidak ada soal yang valid untuk ditampilkan. Silakan muat ulang halaman atau periksa konfigurasi Google Sheet Anda.', 'error');
+                return;
+            }
+
+            // Sembunyikan pesan yang mungkin muncul sebelumnya
+            hideMessage();
+
+            currentQuestionIndex = 0;
+            score = 0;
+
+            // Mengganti tampilan layar
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+
+            displayQuestion();
+        }
+
+        /**
+         * Menampilkan pertanyaan dan opsi jawaban saat ini.
+         * Opsi jawaban diambil dari kolom 'a', 'b', 'c', 'd' di Google Sheet.
+         */
+        function displayQuestion() {
+            // Bersihkan opsi jawaban sebelumnya dan sembunyikan penjelasan
+            optionsContainer.innerHTML = '';
+            explanationBox.classList.add('hidden');
+            explanationText.innerText = '';
+
+            // Perbarui teks skor dan progres
+            scoreText.innerText = `Skor: ${score}`;
+            progressText.innerText = `Soal ${currentQuestionIndex + 1} dari ${allQuestions.length}`;
+
+            const question = allQuestions[currentQuestionIndex];
+            // Pengecekan keamanan tambahan jika soal tidak terdefinisi (seharusnya tidak terjadi setelah filter)
+            if (!question) {
+                console.error("Mencoba menampilkan soal yang tidak ada pada indeks:", currentQuestionIndex);
+                showResults(); // Langsung tampilkan hasil jika ada masalah
+                return;
+            }
+            questionText.innerText = question.soal; // Menampilkan teks pertanyaan
+
+            // Iterasi melalui opsi 'a', 'b', 'c', 'd' untuk membuat tombol
+            const options = ['a', 'b', 'c', 'd'];
+            options.forEach(optionKey => {
+                // Pastikan opsi tidak kosong sebelum membuat tombol
+                if (question[optionKey] && question[optionKey].trim() !== '') {
+                    const button = document.createElement('button');
+                    button.innerText = question[optionKey]; // Teks tombol adalah isi opsi
+                    button.classList.add(
+                        'option-btn', 'w-full', 'p-4', 'bg-white', 'border-2',
+                        'border-gray-200', 'rounded-lg', 'text-left', 'hover:bg-blue-50',
+                        'hover:border-blue-300', 'focus:outline-none', 'focus:ring-2',
+                        'focus:ring-blue-400'
+                    );
+                    button.dataset.option = optionKey; // Menyimpan kunci opsi (a, b, c, d) sebagai data atribut
+                    button.addEventListener('click', selectAnswer); // Menambahkan event listener
+                    optionsContainer.appendChild(button); // Menambahkan tombol ke container
+                }
+            });
+        }
+
+        /**
+         * Dipanggil ketika pengguna memilih salah satu jawaban.
+         * Memeriksa jawaban, memberikan feedback visual, dan melanjutkan ke pertanyaan berikutnya.
+         */
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const selectedOption = selectedButton.dataset.option; // Opsi yang dipilih pengguna
+            // Kunci jawaban dari Google Sheet, dinormalisasi (lowercase dan trim)
+            const question = allQuestions[currentQuestionIndex];
+            const correctOption = question.kunci.toLowerCase().trim();
+
+            // Nonaktifkan semua tombol opsi setelah jawaban dipilih untuk mencegah klik ganda
+            const allOptionButtons = optionsContainer.querySelectorAll('.option-btn');
+            allOptionButtons.forEach(btn => btn.disabled = true);
+
+            // Berikan feedback visual berdasarkan jawaban
+            if (selectedOption === correctOption) {
+                score += POINTS_PER_QUESTION; // Tambah skor berdasarkan poin per soal
+                selectedButton.classList.add('correct'); // Beri warna hijau
+            } else {
+                selectedButton.classList.add('incorrect'); // Beri warna merah
+                // Tunjukkan jawaban yang benar dengan memberi warna hijau pada tombol yang benar
+                allOptionButtons.forEach(btn => {
+                    if (btn.dataset.option === correctOption) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            // Tampilkan penjelasan jika ada
+            if (question.penjelasan && question.penjelasan.trim() !== '') {
+                explanationText.innerText = question.penjelasan;
+                explanationBox.classList.remove('hidden');
+            }
+
+            // Lanjut ke pertanyaan berikutnya atau tampilkan hasil setelah jeda singkat
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < allQuestions.length) {
+                    displayQuestion(); // Tampilkan soal berikutnya
+                } else {
+                    showResults(); // Kuis selesai, tampilkan hasil
+                }
+            }, 3000); // Jeda 3 detik agar pengguna bisa membaca penjelasan
+        }
+
+        /**
+         * Menampilkan layar hasil akhir kuis.
+         * Menghitung dan menampilkan skor akhir dan ringkasan.
+         */
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            // Tampilkan skor akhir dalam poin
+            finalScore.innerText = `${score} Poin`;
+            scoreSummary.innerText = `Anda menjawab ${score / POINTS_PER_QUESTION} dari ${allQuestions.length} soal dengan benar!`;
+            
+            // Tampilkan nama, NIP, dan Satker di hasil akhir
+            finalUserInfo.innerText = `Nama: ${userName} | NIP: ${userNip} | Satker: ${userSatker}`;
+
+            // Tambahkan pengguna ke daftar yang sudah menyelesaikan kuis dan nonaktifkan tombol restart
+            const normalizedUserName = normalizeString(userName);
+            const normalizedUserNip = normalizeString(userNip);
+            const userIdentifierForCompletion = `${normalizedUserName}-${normalizedUserNip}`;
+            completedUsers.add(userIdentifierForCompletion);
+            restartBtn.disabled = true;
+            restartBtn.classList.add('btn-disabled');
+        }
+
+        // --- Event Listeners ---
+        // Tombol "Mulai Kuis" pada layar awal
+        startBtn.addEventListener('click', startQuiz);
+        // Tombol "Ulangi Kuis" pada layar hasil
+        // restartBtn.addEventListener('click', startQuiz); // Dinonaktifkan karena tombol akan dinonaktifkan setelah kuis selesai
+
+        // --- Inisialisasi Aplikasi ---
+        // Memuat data kuis saat DOM selesai dimuat
+        document.addEventListener('DOMContentLoaded', loadQuizData);
+
+    </script>
+
+</body>
+</html>
