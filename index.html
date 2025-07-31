@@ -80,6 +80,17 @@
             font-size: 0.9rem;
             text-align: left;
         }
+        /* Styles for result messages */
+        .success-message {
+            background-color: #D1FAE5; /* Light green */
+            color: #065F46; /* Darker green */
+            border-left: 4px solid #10B981;
+        }
+        .fail-message {
+            background-color: #FEE2E2; /* Light red */
+            color: #991B1B; /* Darker red */
+            border-left: 4px solid #EF4444;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -105,6 +116,7 @@
                 <ul class="list-disc list-inside text-sm">
                     <li>Kuis ini terdiri dari beberapa pertanyaan pilihan ganda.</li>
                     <li>Setiap jawaban benar bernilai **5 poin**.</li>
+                    <li>Nilai lulus adalah menjawab benar **15 soal** atau nilai **75 poin** dan berhak mendapatkan sertifikat ST9CU bulan Juli 2025.</li>
                     <li>Pastikan Anda mengisi Nama dan NIP dengan benar.</li>
                     <li>Pilih jawaban terbaik untuk setiap pertanyaan.</li>
                 </ul>
@@ -166,10 +178,19 @@
         <div id="result-screen" class="hidden bg-white p-8 rounded-2xl shadow-lg text-center">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Kuis Selesai!</h2>
             <p class="text-gray-600 mb-6">Berikut adalah hasil akhir Anda:</p>
-            <div class="bg-blue-50 p-6 rounded-xl mb-8">
+            <div id="score-display-box" class="p-6 rounded-xl mb-8">
                 <p class="text-lg text-blue-800">Skor Akhir Anda</p>
                 <p id="final-score" class="text-6xl font-bold text-blue-600 my-2">100</p>
                 <p id="score-summary" class="text-blue-800">Anda menjawab 10 dari 10 soal dengan benar!</p>
+            </div>
+            <!-- Pesan hasil kuis (lulus/tidak lulus) -->
+            <div id="result-message-box" class="p-4 rounded-lg mb-6 text-center">
+                <p id="result-message" class="text-lg font-semibold"></p>
+                <p id="result-emoji" class="text-4xl mt-2"></p>
+                <!-- Trophy icon for success -->
+                <svg id="trophy-icon" class="hidden w-20 h-20 mx-auto mt-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h4l1 3h4l1-3h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                </svg>
             </div>
             <!-- Tampilkan Nama, NIP, dan Satker di hasil akhir -->
             <p id="final-user-info" class="text-gray-700 mb-4"></p>
@@ -216,6 +237,13 @@
         const explanationBox = document.getElementById('explanation-box');
         const explanationText = document.getElementById('explanation-text');
 
+        // Result message elements
+        const scoreDisplayBox = document.getElementById('score-display-box');
+        const resultMessageBox = document.getElementById('result-message-box');
+        const resultMessage = document.getElementById('result-message');
+        const resultEmoji = document.getElementById('result-emoji');
+        const trophyIcon = document.getElementById('trophy-icon');
+
         // --- Variabel State Kuis ---
         let allQuestions = []; // Array untuk menyimpan semua soal yang dimuat
         let currentQuestionIndex = 0; // Indeks soal saat ini
@@ -224,6 +252,7 @@
         let userNip = ''; // NIP pengguna
         let userSatker = ''; // Satker pengguna
         const POINTS_PER_QUESTION = 5; // Nilai poin untuk setiap soal yang benar
+        const PASSING_SCORE = 75; // Nilai minimum untuk lulus kuis
 
         // Set untuk melacak kombinasi nama-NIP yang sudah menyelesaikan kuis dalam sesi ini
         // Catatan: Ini hanya akan berfungsi selama sesi browser aktif. Jika browser ditutup, data ini akan hilang.
@@ -232,138 +261,44 @@
         // Daftar NIP yang valid
         // Nama Lengkap bebas diisi, tetapi NIP harus ada dalam daftar ini
         const VALID_NIPS = new Set([
-            "197609271999011001",
-            "196801191993022001",
-            "198701042009022004",
-            "197212121994012001",
-            "198001292005021002",
-            "196305051991021001",
-            "197607011999121001",
-            "198104262003122006",
-            "197311221995121002",
-            "197505021996121001",
-            "197402031996121001",
-            "197605021997121001",
-            "198103292006021001",
-            "197006251998031001",
-            "197910072000121004",
-            "198304162008011009",
-            "196809091994012001",
-            "198407062008012017",
-            "198510202007012002",
-            "197701261999011001",
-            "198306012006022001",
-            "197707242000122002",
-            "197905122002122003",
-            "198211012004121003",
-            "198210212004122001",
-            "198710242009122002",
-            "198510242009022006",
-            "198604232009021003",
-            "198705242009022007",
-            "198408232008012009",
-            "198511152008012003",
-            "198512072008012004",
-            "198807062010121007",
-            "198407102007011003",
-            "198302252006041003",
-            "199402232016021001",
-            "198108092004121001",
-            "197901222002122005",
-            "197409262002122002",
-            "197912262002121004",
-            "197806282000121003",
-            "197711142000031001",
-            "197703111998031002",
-            "197307281994122001",
-            "196912171994011001",
-            "197409191993011001",
-            "197011101992031005",
-            "197012271990031002",
-            "196906231989032001",
-            "199406152016021001",
-            "199209032014122002",
-            "198006052005022001",
-            "199212272014122001",
-            "198707022013111001",
-            "198608302011012027",
-            "198601072010031002",
-            "197407311993011001",
-            "198606192009022004",
-            "198612092009121003",
-            "199412162017012002",
-            "199312172017011001",
-            "199510222018021001",
-            "199509242018021001",
-            "199210272019031001",
-            "199607132019032001",
-            "198810272011012013",
-            "199408232019032001",
-            "199504292019122001",
-            "199801042019121001",
-            "198802192010031001",
-            "199809212021042001",
-            "197909152006042026",
-            "199906232022011001",
-            "199811182022012002",
-            "199703312019122002",
-            "200203152023022001",
-            "199302072014121001",
-            "200109132024121002",
-            "200107042024122003",
-            "197308101994011001",
-            "199007132012112001",
-            "197006252002121003",
-            "197606122002121010",
-            "197503301996031002",
-            "198405152007011001",
-            "199811042023022001",
-            "199809022019122001",
-            "200101082019122001",
-            "197609021999012001",
-            "197409241994032001",
-            "196711251994022001",
-            "198409292011011015",
-            "198806102011012013",
-            "198404272011011010",
-            "198604182011011011",
-            "197611122008012014",
-            "198208032005022002",
-            "197804082005022002",
-            "198311102005022001",
-            "197801301998031001",
-            "197201271998032012",
-            "198411182009022008",
-            "198712222008012001",
-            "198903082012111001",
-            "197801282005022003",
-            "199506132017012001",
-            "199606302019121001",
-            "199712252019121001",
-            "199408272017012001",
-            "199405142017012001",
-            "199311062016022002",
-            "198102022005021002",
-            "198902202011012009",
-            "198410262011012013",
-            "198712292010032001",
-            "198802112010031001",
-            "198506272009022011",
-            "198910122023212022",
-            "199003062012122001",
-            "198611132022032001",
-            "198402092007011001",
-            "199901092022012001",
-            "199401122025061005",
-            "199605282025061004",
-            "200208282025062002",
-            "200305102025062001"
+            "197609271999011001", "196801191993022001", "198701042009022004", "197212121994012001",
+            "198001292005021002", "196305051991021001", "197607011999121001", "198104262003122006",
+            "197311221995121002", "197505021996121001", "197402031996121001", "197605021997121001",
+            "198103292006021001", "197006251998031001", "197910072000121004", "198304162008011009",
+            "196809091994012001", "198407062008012017", "198510202007012002", "197701261999011001",
+            "198306012006022001", "197707242000122002", "197905122002122003", "198211012004121003",
+            "198210212004122001", "198710242009122002", "198510242009022006", "198604232009021003",
+            "198705242009022007", "198408232008012009", "198511152008012003", "198512072008012004",
+            "198807062010121007", "198407102007011003", "198302252006041003", "199402232016021001",
+            "198108092004121001", "197901222002122005", "197409262002122002", "197912262002121004",
+            "197806282000121003", "197711142000031001", "197703111998031002", "197307281994122001",
+            "196912171994011001", "197409191993011001", "197011101992031005", "197012271990031002",
+            "196906231989032001", "199406152016021001", "199209032014122002", "198006052005022001",
+            "199212272014122001", "198707022013111001", "198608302011012027", "198601072010031002",
+            "197407311993011001", "198606192009022004", "198612092009121003", "199412162017012002",
+            "199312172017011001", "199510222018021001", "199509242018021001", "199210272019031001",
+            "199607132019032001", "198810272011012013", "199408232019032001", "199504292019122001",
+            "199801042019121001", "198802192010031001", "199809212021042001", "197909152006042026",
+            "199906232022011001", "199811182022012002", "199703312019122002", "200203152023022001",
+            "199302072014121001", "200109132024121002", "200107042024122003", "197308101994011001",
+            "199007132012112001", "197006252002121003", "197606122002121010", "197503301996031002",
+            "198405152007011001", "199811042023022001", "199809022019122001", "200101082019122001",
+            "197609021999012001", "197409241994032001", "196711251994022001", "198409292011011015",
+            "198806102011012013", "198404272011011010", "198604182011011011", "197611122008012014",
+            "198208032005022002", "197804082005022002", "198311102005022001", "197801301998031001",
+            "197201271998032012", "198411182009022008", "198712222008012001", "198903082012111001",
+            "197801282005022003", "199506132017012001", "199606302019121001", "199712252019121001",
+            "199408272017012001", "199405142017012001", "199311062016022002", "198102022005021002",
+            "198902202011012009", "198410262011012013", "198712292010032001", "198802112010031001",
+            "198506272009022011", "198910122023212022", "199003062012122001", "198611132022032001",
+            "198402092007011001", "199901092022012001", "199401122025061005", "199605282025061004",
+            "200208282025062002", "200305102025062001"
         ]);
 
         // --- Fungsi Utama ---
 
         /**
-         * Fungsi pembantu untuk menormalisasi string (lowercase dan hapus spasi ekstra).
+         * Fungsi pembantu untuk menormalisasi string (lowercase dan hapus spasi).
          * Berguna untuk perbandingan NIP yang konsisten.
          * @param {string} str - String yang akan dinormalisasi.
          * @returns {string} String yang sudah dinormalisasi.
@@ -606,10 +541,27 @@
 
             // Tampilkan skor akhir dalam poin
             finalScore.innerText = `${score} Poin`;
-            scoreSummary.innerText = `Anda menjawab ${score / POINTS_PER_QUESTION} dari ${allQuestions.length} soal dengan benar!`;
+            const correctAnswersCount = score / POINTS_PER_QUESTION;
+            scoreSummary.innerText = `Anda menjawab ${correctAnswersCount} dari ${allQuestions.length} soal dengan benar!`;
             
             // Tampilkan nama, NIP, dan Satker di hasil akhir
             finalUserInfo.innerText = `Nama: ${userName} | NIP: ${userNip} | Satker: ${userSatker}`;
+
+            // Logika untuk pesan hasil
+            resultMessageBox.classList.remove('success-message', 'fail-message');
+            resultEmoji.innerText = '';
+            trophyIcon.classList.add('hidden');
+
+            if (score >= PASSING_SCORE) {
+                resultMessageBox.classList.add('success-message');
+                resultMessage.innerText = "Selamat! Anda lulus dan berhak mendapatkan sertifikat ST9CU bulan Juli 2025!";
+                resultEmoji.innerText = "🎉🥳"; // Emoji kegirangan
+                trophyIcon.classList.remove('hidden'); // Tampilkan ikon piala
+            } else {
+                resultMessageBox.classList.add('fail-message');
+                resultMessage.innerText = "Semangat! Ayo ikuti ST9CU bulan depan, semoga mendapatkan hasil lebih baik.";
+                resultEmoji.innerText = "💪😊"; // Emoji semangat
+            }
 
             // Tambahkan pengguna ke daftar yang sudah menyelesaikan kuis dan nonaktifkan tombol restart
             const normalizedUserName = normalizeString(userName);
