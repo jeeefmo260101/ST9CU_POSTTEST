@@ -106,7 +106,7 @@
         <div id="start-screen" class="bg-white p-8 rounded-2xl shadow-lg text-center">
             <!-- Logo ST9CU -->
             <div class="st9cu-logo mb-4">ST<span>9</span>CU</div>
-            <h1 id="quiz-title" class="text-3xl font-bold text-gray-800 mb-4">Post Test ST9CU Bulan Juli 2025</h1>
+            <h1 id="quiz-title" class="text-3xl font-bold text-gray-800 mb-4">Post Test StT9CU Bulan Juli 2025</h1>
             <p id="quiz-description" class="text-gray-600 mb-4">waktunya ST9CU, sdm tiap hari, eksis dengan content Update, daftar dulu yuk!</p>
             
             <!-- Informasi Penting -->
@@ -266,10 +266,6 @@
         let userSatker = ''; // Satker pengguna
         const POINTS_PER_QUESTION = 5; // Nilai poin untuk setiap soal yang benar
         const PASSING_SCORE = 75; // Nilai minimum untuk lulus kuis
-
-        // Set untuk melacak kombinasi nama-NIP yang sudah menyelesaikan kuis dalam sesi ini
-        // Catatan: Ini hanya akan berfungsi selama sesi browser aktif. Jika browser ditutup, data ini akan hilang.
-        const completedUsers = new Set();
 
         // Daftar NIP yang valid
         // Nama Lengkap bebas diisi, tetapi NIP harus ada dalam daftar ini
@@ -608,7 +604,7 @@
             // Normalisasi NIP untuk perbandingan dengan daftar valid
             const normalizedUserNip = normalizeString(userNip);
             // Identifier untuk mencegah pengulangan tetap menggunakan nama dan NIP
-            const userIdentifierForCompletion = `${normalizeString(userName)}-${normalizedUserNip}`;
+            // const userIdentifierForCompletion = `${normalizeString(userName)}-${normalizedUserNip}`; // Dihapus karena tidak lagi membatasi pengulangan
 
             // Validasi input nama, NIP, dan Satker
             if (userName === '') {
@@ -630,11 +626,10 @@
                 return;
             }
 
-            // Cek apakah pengguna (berdasarkan Nama dan NIP) sudah menyelesaikan kuis dalam sesi ini
-            if (completedUsers.has(userIdentifierForCompletion)) {
-                showMessage('Anda sudah menyelesaikan kuis ini dengan Nama Lengkap dan NIP tersebut. Tidak bisa mengulang kembali.', 'info');
-                return; // Hentikan fungsi jika sudah selesai
-            }
+            // Logika pembatasan pengulangan dihapus di sini.
+            // Pengguna sekarang dapat mengulang kuis dengan Nama/NIP yang sama.
+            // Jika Anda ingin membatasi pengulangan berdasarkan data yang sudah terkirim ke Google Sheet,
+            // itu memerlukan logika yang lebih kompleks di Apps Script atau database.
 
             // Pengecekan untuk memastikan ada soal sebelum memulai kuis
             if (allQuestions.length === 0) {
@@ -818,13 +813,9 @@
                 resultEmoji.innerText = "💪😊"; // Emoji semangat
             }
 
-            // Tambahkan pengguna ke daftar yang sudah menyelesaikan kuis dan nonaktifkan tombol restart
-            const normalizedUserName = normalizeString(userName);
-            const normalizedUserNip = normalizeString(userNip);
-            const userIdentifierForCompletion = `${normalizedUserName}-${normalizedUserNip}`;
-            completedUsers.add(userIdentifierForCompletion);
-            restartBtn.disabled = true;
-            restartBtn.classList.add('btn-disabled');
+            // Tombol restart diaktifkan kembali
+            restartBtn.disabled = false;
+            restartBtn.classList.remove('btn-disabled');
 
             // Kirim data hasil kuis ke Google Sheet
             submitQuizResults();
@@ -834,7 +825,18 @@
         // Tombol "Mulai Kuis" pada layar awal
         startBtn.addEventListener('click', startQuiz);
         // Tombol "Ulangi Kuis" pada layar hasil
-        // restartBtn.addEventListener('click', startQuiz); // Dinonaktifkan karena tombol akan dinonaktifkan setelah kuis selesai
+        restartBtn.addEventListener('click', () => {
+            // Kembali ke layar awal dan kosongkan input
+            startScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            userNameInput.value = '';
+            userNipInput.value = '';
+            userSatkerInput.value = '';
+            hideMessage(); // Sembunyikan pesan jika ada
+            submissionStatus.innerText = ''; // Bersihkan status pengiriman
+            // loadQuizData(); // Opsional: muat ulang data kuis jika ada kemungkinan berubah
+        });
 
         // --- Inisialisasi Aplikasi ---
         // Memuat data kuis saat DOM selesai dimuat
